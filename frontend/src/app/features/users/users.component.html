@@ -1,0 +1,75 @@
+<div class="page-header">
+  <div>
+    <h1>Society Admin Management</h1>
+    <p>Create and manage Society Admin accounts</p>
+  </div>
+  <button mat-flat-button color="primary" (click)="toggleForm()">
+    <mat-icon>{{ showForm() ? 'close' : 'add' }}</mat-icon>
+    {{ showForm() ? 'Cancel' : 'Add Society Admin' }}
+  </button>
+</div>
+
+@if (showForm()) {
+  <mat-card class="form-card">
+    <h2>New Society Admin</h2>
+    <form #adminForm="ngForm">
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>Full Name</mat-label><input matInput name="fullName" [(ngModel)]="newAdmin.fullName" required minlength="2" maxlength="150" /></mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="newAdmin.email" required email #uEmail="ngModel" />
+          @if (uEmail.invalid && uEmail.touched) { <mat-error>Enter a valid email address</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput name="phoneNumber" [(ngModel)]="newAdmin.phoneNumber" required pattern="^[0-9+\(\)\-\s]{7,20}$" #uPhone="ngModel" />
+          @if (uPhone.invalid && uPhone.touched) { <mat-error>Enter a valid phone number</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" name="password" [(ngModel)]="newAdmin.password" required minlength="8" pattern="^(?=.*[A-Z])(?=.*\d).{8,}$" #uPassword="ngModel" />
+          @if (uPassword.invalid && uPassword.touched) { <mat-error>At least 8 characters, one uppercase letter, one number</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Society Name</mat-label>
+          <mat-select name="societyId" [(ngModel)]="newAdmin.societyId" required>
+            @for (s of societies(); track s.id) {
+              <mat-option [value]="s.id">{{ s.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" [disabled]="!adminForm.form.valid" (click)="createSocietyAdmin()">Save Admin</button>
+    </form>
+  </mat-card>
+}
+
+<mat-card class="table-card">
+  <table mat-table [dataSource]="users()" class="full-width">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let u">{{ u.fullName }}</td>
+    </ng-container>
+    <ng-container matColumnDef="contact">
+      <th mat-header-cell *matHeaderCellDef>Contact</th>
+      <td mat-cell *matCellDef="let u">{{ u.email }}<br /><small>{{ u.phoneNumber }}</small></td>
+    </ng-container>
+    <ng-container matColumnDef="society">
+      <th mat-header-cell *matHeaderCellDef>Society</th>
+      <td mat-cell *matCellDef="let u">{{ u.societyId ? getSocietyName(u.societyId) : '-' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Active</th>
+      <td mat-cell *matCellDef="let u"><mat-slide-toggle [checked]="u.isActive" (change)="toggleActive(u)"></mat-slide-toggle></td>
+    </ng-container>
+    <ng-container matColumnDef="lastLogin">
+      <th mat-header-cell *matHeaderCellDef>Last Login</th>
+      <td mat-cell *matCellDef="let u">{{ u.lastLoginAt ? (u.lastLoginAt | date: 'MMM d, h:mm a') : 'Never' }}</td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+  @if (users().length === 0) {
+    <p class="empty">No users found.</p>
+  }
+</mat-card>

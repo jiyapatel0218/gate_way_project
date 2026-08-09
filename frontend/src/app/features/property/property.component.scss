@@ -1,0 +1,41 @@
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.listing-card {
+  padding: 16px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listing-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.listing-type {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+}
+
+h3 { margin: 4px 0 0; font-size: 16px; }
+
+.price { font-weight: 700; color: #0e5e4c; margin: 0; }
+.desc { font-size: 13px; color: rgba(0, 0, 0, 0.7); margin: 0; }
+.contact, .by { font-size: 12px; color: rgba(0, 0, 0, 0.55); margin: 0; }
+
+.approval-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.status-PendingApproval { background: #fbeed4; color: #8a6415; }
+.status-Approved { background: #dff2e6; color: #1e7a46; }
+.status-Rejected { background: #f9e3de; color: #c4432e; }
+.status-Closed { background: #e5e5e5; color: #555; }

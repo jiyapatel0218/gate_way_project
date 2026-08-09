@@ -1,0 +1,104 @@
+<div class="page-header">
+  <div>
+    <h1>My Profile</h1>
+    @if (resident()) {
+      <p>{{ resident()!.fullName }} — Block {{ resident()!.flatNumber }} ({{ resident()!.wingName }}, {{ resident()!.blockName }})</p>
+    }
+  </div>
+</div>
+
+<mat-tab-group>
+  <mat-tab label="Family Members">
+    <mat-card class="tab-card">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput [(ngModel)]="newFamilyMember.name" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Relation</mat-label>
+          <input matInput [(ngModel)]="newFamilyMember.relation" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Age</mat-label>
+          <input matInput type="number" [(ngModel)]="newFamilyMember.age" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput [(ngModel)]="newFamilyMember.phone" />
+        </mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" (click)="addFamilyMember()">Add Family Member</button>
+
+      <mat-list>
+        @for (member of familyMembers(); track member.id) {
+          <mat-list-item>
+            <span matListItemTitle>{{ member.name }} ({{ member.relation }})</span>
+            <span matListItemLine>{{ member.age ? member.age + ' yrs' : '' }} {{ member.phone }}</span>
+            <button mat-icon-button color="warn" (click)="removeFamilyMember(member.id)"><mat-icon>delete</mat-icon></button>
+          </mat-list-item>
+        }
+      </mat-list>
+    </mat-card>
+  </mat-tab>
+
+  <mat-tab label="Vehicles">
+    <mat-card class="tab-card">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Vehicle Number</mat-label>
+          <input matInput [(ngModel)]="newVehicle.vehicleNumber" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <input matInput [(ngModel)]="newVehicle.vehicleType" placeholder="Car / Bike" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Model</mat-label>
+          <input matInput [(ngModel)]="newVehicle.model" />
+        </mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" (click)="addVehicle()">Add Vehicle</button>
+
+      <mat-list>
+        @for (v of vehicles(); track v.id) {
+          <mat-list-item>
+            <span matListItemTitle>{{ v.vehicleNumber }}</span>
+            <span matListItemLine>{{ v.vehicleType }} {{ v.model }}</span>
+            <button mat-icon-button color="warn" (click)="removeVehicle(v.id)"><mat-icon>delete</mat-icon></button>
+          </mat-list-item>
+        }
+      </mat-list>
+    </mat-card>
+  </mat-tab>
+
+  <mat-tab label="Emergency Contacts">
+    <mat-card class="tab-card">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput [(ngModel)]="newContact.name" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput [(ngModel)]="newContact.phone" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Relation</mat-label>
+          <input matInput [(ngModel)]="newContact.relation" />
+        </mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" (click)="addContact()">Add Contact</button>
+
+      <mat-list>
+        @for (c of emergencyContacts(); track c.id) {
+          <mat-list-item>
+            <span matListItemTitle>{{ c.name }} ({{ c.relation }})</span>
+            <span matListItemLine>{{ c.phone }}</span>
+            <button mat-icon-button color="warn" (click)="removeContact(c.id)"><mat-icon>delete</mat-icon></button>
+          </mat-list-item>
+        }
+      </mat-list>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

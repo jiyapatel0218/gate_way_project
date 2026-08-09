@@ -1,0 +1,50 @@
+# ===== .NET / ASP.NET Core (backend) =====
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.pdb
+
+# Local secrets override — see appsettings.Local.json.example
+appsettings.Local.json
+appsettings.*.Local.json
+
+# ===== Angular / Node (frontend) =====
+node_modules/
+dist/
+tmp/
+out-tsc/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+# ===== Environment / secrets =====
+.env
+.env.*
+!.env.example
+
+# ===== IDE / editor =====
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Logs =====
+*.log
+
+# ===== Superseded single-file prototypes (replaced by backend/ + frontend/) =====
+/gate.html
+/gate.zip
+/gatekeeper.html
+/gatekeeper.zip
+/h.hteml

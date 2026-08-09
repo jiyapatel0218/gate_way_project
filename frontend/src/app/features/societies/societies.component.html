@@ -1,0 +1,96 @@
+<div class="page-header">
+  <div>
+    <h1>Society Management</h1>
+    <p>Manage societies, blocks, wings, and flats</p>
+  </div>
+  <button mat-flat-button color="primary" (click)="showForm.set(!showForm())">
+    <mat-icon>{{ showForm() ? 'close' : 'add' }}</mat-icon>
+    {{ showForm() ? 'Cancel' : 'Add Society' }}
+  </button>
+</div>
+
+@if (showForm()) {
+  <mat-card class="form-card">
+    <h2>New Society</h2>
+    <form #societyForm="ngForm">
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput name="name" [(ngModel)]="newSociety.name" required minlength="2" maxlength="150" /></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Address</mat-label><input matInput name="address" [(ngModel)]="newSociety.address" required maxlength="300" /></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>City</mat-label><input matInput name="city" [(ngModel)]="newSociety.city" required maxlength="100" /></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>State</mat-label><input matInput name="state" [(ngModel)]="newSociety.state" required maxlength="100" /></mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Pin Code</mat-label>
+          <input matInput name="pinCode" [(ngModel)]="newSociety.pinCode" required pattern="^\d{4,10}$" #pinModel="ngModel" />
+          @if (pinModel.invalid && pinModel.touched) { <mat-error>4-10 digits only</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Contact Email</mat-label>
+          <input matInput type="email" name="contactEmail" [(ngModel)]="newSociety.contactEmail" email #sEmail="ngModel" />
+          @if (sEmail.invalid && sEmail.touched) { <mat-error>Enter a valid email address</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Contact Phone</mat-label>
+          <input matInput name="contactPhone" [(ngModel)]="newSociety.contactPhone" pattern="^[0-9+\(\)\-\s]{7,20}$" #sPhone="ngModel" />
+          @if (sPhone.invalid && sPhone.touched) { <mat-error>Enter a valid phone number</mat-error> }
+        </mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" [disabled]="!societyForm.form.valid" (click)="createSociety()">Save Society</button>
+    </form>
+  </mat-card>
+}
+
+@for (society of societies(); track society.id) {
+  <mat-card class="society-card">
+    <div class="society-header" (click)="expandSociety(society)">
+      <div>
+        <h3>{{ society.name }}</h3>
+        <p>{{ society.address }}, {{ society.city }}, {{ society.state }} - {{ society.pinCode }}</p>
+      </div>
+      <mat-slide-toggle [checked]="society.isActive" (click)="$event.stopPropagation()" (change)="toggleSocietyActive(society)"></mat-slide-toggle>
+    </div>
+
+    @if (expandedSocietyId() === society.id) {
+      <div class="blocks-section">
+        <div class="add-row">
+          <mat-form-field appearance="outline" class="inline-field">
+            <mat-label>New Block Name</mat-label>
+            <input matInput [(ngModel)]="newBlockName[society.id]" />
+          </mat-form-field>
+          <button mat-stroked-button (click)="addBlock(society.id)">Add Block</button>
+        </div>
+
+        <mat-accordion>
+          @for (block of blocksBySociety()[society.id] ?? []; track block.id) {
+            <mat-expansion-panel (opened)="loadUnits(block)">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ block.name }}</mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="add-row">
+                <mat-form-field appearance="outline" class="inline-field small">
+                  <mat-label>Unit Number</mat-label>
+                  <input matInput [(ngModel)]="newUnit[block.id].unitNumber" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="inline-field small">
+                  <mat-label>Floor</mat-label>
+                  <input matInput type="number" [(ngModel)]="newUnit[block.id].floor" />
+                </mat-form-field>
+                <button mat-stroked-button (click)="addUnit(block)">Add Unit</button>
+              </div>
+
+              <div class="flats-grid">
+                @for (flat of unitsByBlock()[block.id] ?? []; track flat.id) {
+                  <span class="flat-chip">{{ flat.flatNumber }} (Floor {{ flat.floor }})</span>
+                }
+              </div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </div>
+    }
+  </mat-card>
+}
+
+@if (societies().length === 0) {
+  <p class="empty">No societies yet.</p>
+}

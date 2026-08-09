@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+.role-card {
+  will-change: transform;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}

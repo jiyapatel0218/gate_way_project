@@ -1,0 +1,163 @@
+<div class="page-header">
+  <div>
+    <h1>Resident Management</h1>
+    <p>Manage residents, ownership, and occupancy</p>
+  </div>
+  <button mat-flat-button color="primary" (click)="showForm() ? closeForm() : openCreateForm()">
+    <mat-icon>{{ showForm() ? 'close' : 'add' }}</mat-icon>
+    {{ showForm() ? 'Cancel' : 'Add Resident' }}
+  </button>
+</div>
+
+@if (showForm()) {
+  <mat-card class="form-card">
+    <h2>{{ isEditMode() ? 'Edit Resident' : 'New Resident' }}</h2>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Full Name</mat-label>
+          <input matInput formControlName="fullName" />
+          @if (form.get('fullName')?.invalid && form.get('fullName')?.touched) {
+            <mat-error>Full name must be 2-150 characters</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" />
+          @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <mat-error>Enter a valid email address</mat-error>
+          }
+          @if (isEditMode()) {
+            <mat-hint>Email can't be changed after the account is created</mat-hint>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput formControlName="phoneNumber" />
+          @if (form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched) {
+            <mat-error>Enter a valid phone number</mat-error>
+          }
+        </mat-form-field>
+
+        @if (!isEditMode()) {
+          <mat-form-field appearance="outline">
+            <mat-label>Temporary Password</mat-label>
+            <input matInput type="password" formControlName="password" />
+            @if (form.get('password')?.invalid && form.get('password')?.touched) {
+              <mat-error>At least 8 characters, one uppercase letter, one number</mat-error>
+            }
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline">
+          <mat-label>Society Name</mat-label>
+          <mat-select formControlName="societyId" (selectionChange)="onSocietyChange()">
+            @for (s of societies(); track s.id) {
+              <mat-option [value]="s.id">{{ s.name }}</mat-option>
+            }
+          </mat-select>
+          @if (loadingSociety()) {
+            <mat-spinner matSuffix diameter="18"></mat-spinner>
+          }
+          @if (societyControl.invalid && societyControl.touched) {
+            <mat-error>Society is required</mat-error>
+          }
+          @if (societyControl.disabled) {
+            <mat-hint>Locked to your assigned society</mat-hint>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Block</mat-label>
+          <mat-select formControlName="flatId" [disabled]="flats().length === 0">
+            @for (flat of flats(); track flat.id) {
+              <mat-option [value]="flat.id">{{ flat.blockName }} / {{ flat.wingName }} / {{ flat.flatNumber }}</mat-option>
+            }
+          </mat-select>
+          @if (form.get('flatId')?.invalid && form.get('flatId')?.touched) {
+            <mat-error>Please select a unit</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Ownership</mat-label>
+          <mat-select formControlName="isOwner">
+            <mat-option [value]="true">Owner</mat-option>
+            <mat-option [value]="false">Tenant</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+        @if (saving()) {
+          <mat-spinner diameter="18"></mat-spinner>
+        } @else {
+          <span>{{ isEditMode() ? 'Save Changes' : 'Save Resident' }}</span>
+        }
+      </button>
+    </form>
+  </mat-card>
+}
+
+<mat-card class="table-card">
+  <div class="search-row">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search by name, block or email</mat-label>
+      <input matInput [(ngModel)]="searchTerm" [ngModelOptions]="{ standalone: true }" (keyup.enter)="load()" />
+      <button mat-icon-button matSuffix (click)="load()"><mat-icon>search</mat-icon></button>
+    </mat-form-field>
+  </div>
+
+  <table mat-table [dataSource]="residents()" class="full-width">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let r">{{ r.fullName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="society">
+      <th mat-header-cell *matHeaderCellDef>Society</th>
+      <td mat-cell *matCellDef="let r">{{ r.societyName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="flat">
+      <th mat-header-cell *matHeaderCellDef>Block</th>
+      <td mat-cell *matCellDef="let r">{{ r.blockName }} / {{ r.wingName }} / {{ r.flatNumber }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="contact">
+      <th mat-header-cell *matHeaderCellDef>Contact</th>
+      <td mat-cell *matCellDef="let r">{{ r.email }}<br /><small>{{ r.phoneNumber }}</small></td>
+    </ng-container>
+
+    <ng-container matColumnDef="ownership">
+      <th mat-header-cell *matHeaderCellDef>Ownership</th>
+      <td mat-cell *matCellDef="let r">
+        <mat-chip-set><mat-chip>{{ r.isOwner ? 'Owner' : 'Tenant' }}</mat-chip></mat-chip-set>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Active</th>
+      <td mat-cell *matCellDef="let r">
+        <mat-slide-toggle [checked]="r.isActive" (change)="toggleActive(r)"></mat-slide-toggle>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let r">
+        <button mat-icon-button (click)="openEditForm(r)"><mat-icon>edit</mat-icon></button>
+        <button mat-icon-button color="warn" (click)="deleteResident(r)"><mat-icon>delete</mat-icon></button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+
+  @if (residents().length === 0) {
+    <p class="empty">No residents found.</p>
+  }
+</mat-card>

@@ -1,0 +1,8 @@
+{
+  "Jwt": {
+    "Key": "REPLACE_WITH_A_LONG_RANDOM_SECRET_AT_LEAST_32_CHARS"
+  },
+  "Otp": {
+    "Pepper": "REPLACE_WITH_A_LONG_RANDOM_SECRET"
+  }
+}

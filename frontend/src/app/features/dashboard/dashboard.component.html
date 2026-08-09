@@ -1,0 +1,36 @@
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <p>Overview of your society's activity</p>
+</div>
+
+<div class="tiles-grid">
+  @for (tile of tiles(); track tile.label) {
+    <mat-card class="stat-tile">
+      <div class="tile-icon" [style.background]="tile.color + '1a'" [style.color]="tile.color">
+        <mat-icon>{{ tile.icon }}</mat-icon>
+      </div>
+      <div class="tile-body">
+        <span class="tile-value">{{ tile.value }}</span>
+        <span class="tile-label">{{ tile.label }}</span>
+      </div>
+    </mat-card>
+  }
+</div>
+
+@if (summary()) {
+  <mat-card class="activity-card">
+    <h2>Recent Activity</h2>
+    @if (summary()!.recentActivities.length === 0) {
+      <p class="empty">No recent activity</p>
+    }
+    <div class="activity-list">
+      @for (activity of summary()!.recentActivities; track activity.timestamp) {
+        <div class="activity-row">
+          <span class="activity-type" [class.complaint]="activity.type === 'Complaint'" [class.visitor]="activity.type === 'Visitor'">{{ activity.type }}</span>
+          <span class="activity-desc">{{ activity.description }}</span>
+          <span class="activity-time">{{ activity.timestamp | date: 'MMM d, h:mm a' }}</span>
+        </div>
+      }
+    </div>
+  </mat-card>
+}

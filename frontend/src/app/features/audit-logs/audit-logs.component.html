@@ -1,0 +1,36 @@
+<div class="page-header">
+  <div>
+    <h1>Audit Logs</h1>
+    <p>System activity and login history</p>
+  </div>
+</div>
+
+<mat-card class="table-card">
+  <table mat-table [dataSource]="logs()" class="full-width">
+    <ng-container matColumnDef="action">
+      <th mat-header-cell *matHeaderCellDef>Action</th>
+      <td mat-cell *matCellDef="let l">{{ l.action }}</td>
+    </ng-container>
+    <ng-container matColumnDef="entity">
+      <th mat-header-cell *matHeaderCellDef>Entity</th>
+      <td mat-cell *matCellDef="let l">{{ l.entityName }}</td>
+    </ng-container>
+    <ng-container matColumnDef="user">
+      <th mat-header-cell *matHeaderCellDef>User</th>
+      <td mat-cell *matCellDef="let l">{{ l.userName }}</td>
+    </ng-container>
+    <ng-container matColumnDef="ip">
+      <th mat-header-cell *matHeaderCellDef>IP Address</th>
+      <td mat-cell *matCellDef="let l">{{ l.ipAddress }}</td>
+    </ng-container>
+    <ng-container matColumnDef="time">
+      <th mat-header-cell *matHeaderCellDef>Timestamp</th>
+      <td mat-cell *matCellDef="let l">{{ l.createdAt | date: 'MMM d, y h:mm a' }}</td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+  @if (logs().length === 0) {
+    <p class="empty">No audit log entries yet.</p>
+  }
+</mat-card>

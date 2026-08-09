@@ -1,0 +1,36 @@
+.tab-card {
+  padding: 20px !important;
+  margin-top: 16px;
+}
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.inline-field {
+  width: 240px;
+  &.small { width: 160px; }
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.master-chip {
+  background: #dceee8;
+  color: #0e5e4c;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13px;
+
+  &.inactive {
+    background: #eee;
+    color: #999;
+  }
+}

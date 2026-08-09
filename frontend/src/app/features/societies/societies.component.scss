@@ -1,0 +1,48 @@
+.society-card {
+  padding: 16px !important;
+  margin-bottom: 12px;
+}
+
+.society-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+
+  h3 { margin: 0; font-size: 16px; }
+  p { margin: 2px 0 0; font-size: 12.5px; color: rgba(0, 0, 0, 0.6); }
+}
+
+.blocks-section {
+  margin-top: 16px;
+  border-top: 1px solid #eee;
+  padding-top: 16px;
+}
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.inline-field {
+  width: 200px;
+
+  &.small { width: 100px; }
+}
+
+.flats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flat-chip {
+  background: #dceee8;
+  color: #0e5e4c;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12.5px;
+}

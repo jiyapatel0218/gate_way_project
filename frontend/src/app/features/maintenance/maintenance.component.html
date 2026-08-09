@@ -1,0 +1,139 @@
+<div class="page-header">
+  <div>
+    <h1>Maintenance Management</h1>
+    <p>{{ isAdmin() ? 'Generate invoices and track payments' : 'View dues and pay maintenance online' }}</p>
+  </div>
+  @if (isAdmin()) {
+    <div class="header-actions">
+      <button mat-stroked-button (click)="exportExcel()"><mat-icon>grid_on</mat-icon> Excel</button>
+      <button mat-stroked-button (click)="exportPdf()"><mat-icon>picture_as_pdf</mat-icon> PDF</button>
+      <button mat-flat-button color="primary" (click)="showGenerateForm.set(!showGenerateForm())">
+        <mat-icon>{{ showGenerateForm() ? 'close' : 'add' }}</mat-icon>
+        {{ showGenerateForm() ? 'Cancel' : 'Generate Invoices' }}
+      </button>
+    </div>
+  }
+</div>
+
+@if (showGenerateForm()) {
+  <mat-card class="form-card">
+    <h2>Generate Monthly Maintenance</h2>
+    <form #generateFormRef="ngForm">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Maintenance Type</mat-label>
+          <mat-select name="maintenanceTypeId" [(ngModel)]="generateForm.maintenanceTypeId" required>
+            @for (t of maintenanceTypes(); track t.id) {
+              <mat-option [value]="t.id">{{ t.name }} (₹{{ t.defaultAmount }})</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Month</mat-label>
+          <mat-select name="month" [(ngModel)]="generateForm.month" required>
+            @for (m of months; track m) {
+              <mat-option [value]="m">{{ m }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Year</mat-label>
+          <input matInput type="number" name="year" [(ngModel)]="generateForm.year" required min="2000" max="2100" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Due Date</mat-label>
+          <input matInput [matDatepicker]="dueDatePicker" name="dueDate" [(ngModel)]="generateForm.dueDate" required />
+          <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #dueDatePicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" [disabled]="!generateFormRef.form.valid" (click)="generate()">Generate</button>
+    </form>
+  </mat-card>
+}
+
+<mat-card class="table-card">
+  <table mat-table [dataSource]="invoices()" class="full-width">
+    <ng-container matColumnDef="flat">
+      <th mat-header-cell *matHeaderCellDef>Block</th>
+      <td mat-cell *matCellDef="let i">{{ i.blockName }} / {{ i.flatNumber }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let i">{{ i.maintenanceTypeName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="period">
+      <th mat-header-cell *matHeaderCellDef>Period</th>
+      <td mat-cell *matCellDef="let i">{{ i.month }} {{ i.year }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="amount">
+      <th mat-header-cell *matHeaderCellDef>Amount</th>
+      <td mat-cell *matCellDef="let i">₹{{ i.amount }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="paid">
+      <th mat-header-cell *matHeaderCellDef>Paid</th>
+      <td mat-cell *matCellDef="let i">₹{{ i.paidAmount }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let i">
+        <mat-chip-set><mat-chip [class]="'status-' + i.status">{{ i.status }}</mat-chip></mat-chip-set>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Payment</th>
+      <td mat-cell *matCellDef="let i">
+        @if (i.status !== 'Paid' && !isAdmin()) {
+          <button mat-flat-button color="primary" (click)="payOnline(i)">
+            <mat-icon>bolt</mat-icon>
+            Pay Online
+          </button>
+        }
+        @if (i.status !== 'Paid' && isAdmin() && paymentDrafts[i.id]) {
+          <div class="payment-row">
+            <mat-form-field appearance="outline" class="amount-field">
+              <mat-label>Amount</mat-label>
+              <input matInput type="number" min="0.01" [(ngModel)]="paymentDrafts[i.id].amount" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mode-field">
+              <mat-label>Mode</mat-label>
+              <mat-select [(ngModel)]="paymentDrafts[i.id].mode">
+                @for (m of paymentModes; track m) {
+                  <mat-option [value]="m">{{ m }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <button mat-flat-button color="primary" [disabled]="!paymentDrafts[i.id].amount || paymentDrafts[i.id].amount <= 0" (click)="pay(i)">Record Payment</button>
+          </div>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="invoice">
+      <th mat-header-cell *matHeaderCellDef>Invoice</th>
+      <td mat-cell *matCellDef="let i">
+        @if (i.paidAmount > 0) {
+          <button mat-icon-button matTooltip="View Invoice" (click)="viewInvoice(i)">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Download PDF" (click)="downloadInvoice(i)">
+            <mat-icon>download</mat-icon>
+          </button>
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+
+  @if (invoices().length === 0) {
+    <p class="empty">No maintenance invoices found.</p>
+  }
+</mat-card>

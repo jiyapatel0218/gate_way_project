@@ -1,0 +1,112 @@
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(1200px 600px at 85% -10%, rgba(52, 168, 130, 0.35) 0%, transparent 60%),
+    linear-gradient(135deg, #022c22 0%, #065f46 50%, #0d9488 100%);
+}
+
+.back-to-roles {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  z-index: 5;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  &:hover { color: #ffffff; }
+}
+
+.login-card-wrapper {
+  width: min(420px, 100%);
+}
+
+.form-panel {
+  padding: 44px 40px;
+  border-radius: 24px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+  h2 { margin: 0 0 4px; font-size: 22px; }
+  .sub { margin: 0 0 20px; color: rgba(0, 0, 0, 0.6); }
+}
+
+.form-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin-bottom: 24px;
+
+  .role-emoji { font-size: 40px; }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    color: #0e5e4c;
+  }
+}
+
+.full-width { width: 100%; }
+
+.create-account-hint {
+  text-align: center;
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.6);
+
+  a {
+    color: #0e5e4c;
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.submit-btn {
+  margin-top: 8px;
+  height: 44px;
+}
+
+.error-banner {
+  background: #f9e3de;
+  color: #c4432e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #0e5e4c;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+
+.forgot-link {
+  display: block;
+  margin: -8px 0 16px;
+  text-align: right;
+  width: 100%;
+  text-decoration: none;
+}

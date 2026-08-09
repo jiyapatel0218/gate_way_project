@@ -1,0 +1,57 @@
+<div class="login-page">
+  <a [routerLink]="['/welcome']" class="back-to-roles">
+    <mat-icon inline>arrow_back</mat-icon>
+    Back to Role Selection
+  </a>
+
+  <div class="login-card-wrapper">
+    <mat-card class="form-panel">
+      <div class="form-header">
+        <span class="role-emoji">{{ presentation().emoji }}</span>
+        <h1>{{ presentation().title }}</h1>
+      </div>
+
+      <h2>Welcome back</h2>
+      <p class="sub">Sign in to continue</p>
+
+      <form (ngSubmit)="submit()" #loginForm="ngForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="email" required email #loginEmail="ngModel" autocomplete="username" />
+          @if (loginEmail.invalid && loginEmail.touched) {
+            <mat-error>Enter a valid email address</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" name="password" [(ngModel)]="password" required autocomplete="current-password" />
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <a [routerLink]="['/forgot-password']" class="link-btn forgot-link">Forgot password?</a>
+
+        @if (errorMessage()) {
+          <div class="error-banner">{{ errorMessage() }}</div>
+        }
+
+        <button mat-flat-button color="primary" type="submit" class="full-width submit-btn" [disabled]="loading() || !loginForm.form.valid">
+          @if (loading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <span>Sign In</span>
+          }
+        </button>
+
+        @if (presentation().registerRoute) {
+          <p class="create-account-hint">
+            New here?
+            <a [routerLink]="[presentation().registerRoute]">Create Account</a>
+          </p>
+        }
+      </form>
+    </mat-card>
+  </div>
+</div>

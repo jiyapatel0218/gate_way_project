@@ -1,0 +1,80 @@
+<div class="page-header">
+  <div>
+    <h1>Property Marketplace</h1>
+    <p>Browse or list properties for rent and sale</p>
+  </div>
+  @if (isResident()) {
+    <button mat-flat-button color="primary" (click)="toggleForm()">
+      <mat-icon>{{ showForm() ? 'close' : 'add' }}</mat-icon>
+      {{ showForm() ? 'Cancel' : 'Post Listing' }}
+    </button>
+  }
+</div>
+
+@if (showForm()) {
+  <mat-card class="form-card">
+    <h2>New Property Listing</h2>
+    <form #listingForm="ngForm">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Title</mat-label>
+          <input matInput name="title" [(ngModel)]="newListing.title" required minlength="3" maxlength="150" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <mat-select name="type" [(ngModel)]="newListing.type" required>
+            <mat-option value="Rent">Rent</mat-option>
+            <mat-option value="Sale">Sale</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Price</mat-label>
+          <input matInput type="number" name="price" [(ngModel)]="newListing.price" required min="1" #priceModel="ngModel" />
+          @if (priceModel.invalid && priceModel.touched) { <mat-error>Enter a valid price</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Contact Phone</mat-label>
+          <input matInput name="contactPhone" [(ngModel)]="newListing.contactPhone" required pattern="^[0-9+\(\)\-\s]{7,20}$" #lPhone="ngModel" />
+          @if (lPhone.invalid && lPhone.touched) { <mat-error>Enter a valid phone number</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Contact Email</mat-label>
+          <input matInput type="email" name="contactEmail" [(ngModel)]="newListing.contactEmail" email #lEmail="ngModel" />
+          @if (lEmail.invalid && lEmail.touched) { <mat-error>Enter a valid email address</mat-error> }
+        </mat-form-field>
+      </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput rows="3" name="description" [(ngModel)]="newListing.description" required minlength="5" maxlength="3000"></textarea>
+      </mat-form-field>
+      <button mat-flat-button color="primary" [disabled]="!listingForm.form.valid" (click)="submit()">Submit for Approval</button>
+    </form>
+  </mat-card>
+}
+
+<div class="listings-grid">
+  @for (listing of listings(); track listing.id) {
+    <mat-card class="listing-card">
+      <div class="listing-badge">
+        <mat-chip-set><mat-chip [class]="'status-' + listing.status">{{ listing.status }}</mat-chip></mat-chip-set>
+        <span class="listing-type">{{ listing.type }}</span>
+      </div>
+      <h3>{{ listing.title }}</h3>
+      <p class="price">₹{{ listing.price | number }}</p>
+      <p class="desc">{{ listing.description }}</p>
+      <p class="contact"><mat-icon inline>call</mat-icon> {{ listing.contactPhone }}</p>
+      <p class="by">Listed by {{ listing.residentName }}</p>
+
+      @if (isAdmin() && listing.status === 'PendingApproval') {
+        <div class="approval-actions">
+          <button mat-flat-button color="primary" (click)="approve(listing)">Approve</button>
+          <button mat-stroked-button color="warn" (click)="reject(listing)">Reject</button>
+        </div>
+      }
+    </mat-card>
+  }
+</div>
+
+@if (listings().length === 0) {
+  <p class="empty">No property listings found.</p>
+}

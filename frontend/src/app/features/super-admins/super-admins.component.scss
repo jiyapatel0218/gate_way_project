@@ -1,0 +1,28 @@
+table { width: 100%; }
+
+.security-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff8e1;
+  color: #8a6d1a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin: 0 0 16px;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.current-password-field {
+  grid-column: 1 / -1;
+}
+
+.error-banner {
+  background: #f9e3de;
+  color: #c4432e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}

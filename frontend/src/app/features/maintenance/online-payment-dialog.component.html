@@ -1,0 +1,50 @@
+<div class="dialog-content">
+  @switch (stage()) {
+    @case ('creating-order') {
+      <div class="center-state">
+        <mat-spinner diameter="36"></mat-spinner>
+        <p>Starting secure payment...</p>
+      </div>
+    }
+    @case ('mock-checkout') {
+      <div class="mock-checkout">
+        <div class="gateway-badge">
+          <mat-icon>lock</mat-icon>
+          <span>Simulated Payment Gateway</span>
+        </div>
+        <p class="mock-note">
+          This app is running in <b>Mock</b> payment mode for development &mdash; no real gateway is
+          connected yet. Swap in real Razorpay keys later to accept live payments; no code changes needed.
+        </p>
+        <div class="amount-row">
+          <span>Amount to pay</span>
+          <b>₹{{ amount() | number: '1.2-2' }}</b>
+        </div>
+        <button mat-flat-button color="primary" class="full-width" (click)="simulateSuccessfulPayment()">
+          <mat-icon>check_circle</mat-icon>
+          Simulate Successful Payment
+        </button>
+        <button mat-button class="full-width" (click)="cancel()">Cancel</button>
+      </div>
+    }
+    @case ('processing') {
+      <div class="center-state">
+        <mat-spinner diameter="36"></mat-spinner>
+        <p>Verifying payment...</p>
+      </div>
+    }
+    @case ('success') {
+      <div class="center-state success">
+        <mat-icon class="big-icon">check_circle</mat-icon>
+        <p>Payment successful!</p>
+      </div>
+    }
+    @case ('error') {
+      <div class="center-state error">
+        <mat-icon class="big-icon">error</mat-icon>
+        <p>{{ errorMessage() }}</p>
+        <button mat-button (click)="cancel()">Close</button>
+      </div>
+    }
+  }
+</div>

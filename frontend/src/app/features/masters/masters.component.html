@@ -1,0 +1,69 @@
+<div class="page-header">
+  <div>
+    <h1>Masters</h1>
+    <p>{{ isSuperAdmin() ? 'Shared lookup lists used across every society' : 'Lookup lists shared across all societies (managed by Super Admin)' }}</p>
+  </div>
+</div>
+
+<mat-tab-group>
+  <mat-tab label="Complaint Categories">
+    <mat-card class="tab-card">
+      @if (isSuperAdmin()) {
+        <div class="add-row">
+          <mat-form-field appearance="outline" class="inline-field">
+            <mat-label>Category Name</mat-label>
+            <input matInput [(ngModel)]="newCategoryName" maxlength="100" (keyup.enter)="addCategory()" />
+          </mat-form-field>
+          <button mat-flat-button color="primary" [disabled]="!newCategoryName.trim()" (click)="addCategory()">Add</button>
+        </div>
+      }
+      <div class="chips-row">
+        @for (item of complaintCategories(); track item.id) {
+          <span class="master-chip" [class.inactive]="!item.isActive">{{ item.name }}</span>
+        }
+      </div>
+    </mat-card>
+  </mat-tab>
+
+  <mat-tab label="Visitor Types">
+    <mat-card class="tab-card">
+      @if (isSuperAdmin()) {
+        <div class="add-row">
+          <mat-form-field appearance="outline" class="inline-field">
+            <mat-label>Visitor Type</mat-label>
+            <input matInput [(ngModel)]="newVisitorTypeName" maxlength="100" (keyup.enter)="addVisitorType()" />
+          </mat-form-field>
+          <button mat-flat-button color="primary" [disabled]="!newVisitorTypeName.trim()" (click)="addVisitorType()">Add</button>
+        </div>
+      }
+      <div class="chips-row">
+        @for (item of visitorTypes(); track item.id) {
+          <span class="master-chip" [class.inactive]="!item.isActive">{{ item.name }}</span>
+        }
+      </div>
+    </mat-card>
+  </mat-tab>
+
+  <mat-tab label="Maintenance Types">
+    <mat-card class="tab-card">
+      @if (isSuperAdmin()) {
+        <div class="add-row">
+          <mat-form-field appearance="outline" class="inline-field">
+            <mat-label>Type Name</mat-label>
+            <input matInput [(ngModel)]="newMaintenanceType.name" maxlength="100" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="inline-field small">
+            <mat-label>Default Amount</mat-label>
+            <input matInput type="number" min="0.01" [(ngModel)]="newMaintenanceType.defaultAmount" />
+          </mat-form-field>
+          <button mat-flat-button color="primary" [disabled]="!newMaintenanceType.name.trim() || !newMaintenanceType.defaultAmount || newMaintenanceType.defaultAmount <= 0" (click)="addMaintenanceType()">Add</button>
+        </div>
+      }
+      <div class="chips-row">
+        @for (item of maintenanceTypes(); track item.id) {
+          <span class="master-chip">{{ item.name }} - ₹{{ item.defaultAmount }}</span>
+        }
+      </div>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

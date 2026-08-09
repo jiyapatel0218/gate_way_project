@@ -1,0 +1,20 @@
+table { width: 100%; }
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.payment-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.amount-field { width: 100px; }
+.mode-field { width: 120px; }
+
+.status-Pending { background: #fbeed4; color: #8a6415; }
+.status-Paid { background: #dff2e6; color: #1e7a46; }
+.status-Overdue { background: #f9e3de; color: #c4432e; }
+.status-PartiallyPaid { background: #e2ebf8; color: #2c5fa8; }

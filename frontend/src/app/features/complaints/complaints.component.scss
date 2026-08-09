@@ -1,0 +1,16 @@
+table { width: 100%; }
+
+.status-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.remark-field { width: 140px; }
+.status-select { width: 130px; }
+
+.status-Open { background: #e2ebf8; color: #2c5fa8; }
+.status-Assigned { background: #fbeed4; color: #8a6415; }
+.status-InProgress { background: #fbeed4; color: #8a6415; }
+.status-Completed { background: #dff2e6; color: #1e7a46; }
+.status-Closed { background: #e5e5e5; color: #555; }

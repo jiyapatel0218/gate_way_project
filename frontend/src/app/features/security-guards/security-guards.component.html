@@ -1,0 +1,85 @@
+<div class="page-header">
+  <div>
+    <h1>Security Guard Management</h1>
+    <p>Manage gate security staff</p>
+  </div>
+  <button mat-flat-button color="primary" (click)="toggleForm()">
+    <mat-icon>{{ showForm() ? 'close' : 'add' }}</mat-icon>
+    {{ showForm() ? 'Cancel' : 'Add Guard' }}
+  </button>
+</div>
+
+@if (showForm()) {
+  <mat-card class="form-card">
+    <h2>New Security Guard</h2>
+    <form #guardForm="ngForm">
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>Full Name</mat-label><input matInput name="fullName" [(ngModel)]="newGuard.fullName" required minlength="2" maxlength="150" /></mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="newGuard.email" required email #gEmail="ngModel" />
+          @if (gEmail.invalid && gEmail.touched) { <mat-error>Enter a valid email address</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput name="phoneNumber" [(ngModel)]="newGuard.phoneNumber" required pattern="^[0-9+\(\)\-\s]{7,20}$" #gPhone="ngModel" />
+          @if (gPhone.invalid && gPhone.touched) { <mat-error>Enter a valid phone number</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" name="password" [(ngModel)]="newGuard.password" required minlength="8" pattern="^(?=.*[A-Z])(?=.*\d).{8,}$" #gPassword="ngModel" />
+          @if (gPassword.invalid && gPassword.touched) { <mat-error>At least 8 characters, one uppercase letter, one number</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Society Name</mat-label>
+          @if (isSuperAdmin()) {
+            <mat-select name="societyId" [(ngModel)]="newGuard.societyId" required>
+              @for (s of societies(); track s.id) {
+                <mat-option [value]="s.id">{{ s.name }}</mat-option>
+              }
+            </mat-select>
+          } @else {
+            <input matInput [value]="societies()[0]?.name ?? ''" disabled />
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Shift Timing</mat-label><input matInput name="shiftTiming" [(ngModel)]="newGuard.shiftTiming" required placeholder="Day (8AM-8PM)" /></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Guard Code</mat-label><input matInput name="guardCode" [(ngModel)]="newGuard.guardCode" maxlength="30" /></mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" [disabled]="!guardForm.form.valid" (click)="create()">Save Guard</button>
+    </form>
+  </mat-card>
+}
+
+<mat-card class="table-card">
+  <table mat-table [dataSource]="guards()" class="full-width">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let g">{{ g.fullName }}</td>
+    </ng-container>
+    <ng-container matColumnDef="contact">
+      <th mat-header-cell *matHeaderCellDef>Contact</th>
+      <td mat-cell *matCellDef="let g">{{ g.email }}<br /><small>{{ g.phoneNumber }}</small></td>
+    </ng-container>
+    <ng-container matColumnDef="shift">
+      <th mat-header-cell *matHeaderCellDef>Shift</th>
+      <td mat-cell *matCellDef="let g">{{ g.shiftTiming }}</td>
+    </ng-container>
+    <ng-container matColumnDef="code">
+      <th mat-header-cell *matHeaderCellDef>Code</th>
+      <td mat-cell *matCellDef="let g">{{ g.guardCode }}</td>
+    </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Active</th>
+      <td mat-cell *matCellDef="let g"><mat-slide-toggle [checked]="g.isActive" (change)="toggleActive(g)"></mat-slide-toggle></td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let g"><button mat-icon-button color="warn" (click)="remove(g)"><mat-icon>delete</mat-icon></button></td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+  @if (guards().length === 0) {
+    <p class="empty">No security guards added yet.</p>
+  }
+</mat-card>

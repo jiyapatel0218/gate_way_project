@@ -1,0 +1,72 @@
+<div class="page-header">
+  <div>
+    <h1>Notice Board</h1>
+    <p>Society notices, events, and emergency alerts</p>
+  </div>
+  @if (isAdmin()) {
+    <button mat-flat-button color="primary" (click)="toggleForm()">
+      <mat-icon>{{ showForm() ? 'close' : 'add' }}</mat-icon>
+      {{ showForm() ? 'Cancel' : 'Publish Notice' }}
+    </button>
+  }
+</div>
+
+@if (showForm()) {
+  <mat-card class="form-card">
+    <h2>Publish Notice</h2>
+    <form #noticeForm="ngForm">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Title</mat-label>
+          <input matInput name="title" [(ngModel)]="newNotice.title" required minlength="3" maxlength="150" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <mat-select name="type" [(ngModel)]="newNotice.type" required>
+            <mat-option value="Notice">Notice</mat-option>
+            <mat-option value="Event">Event</mat-option>
+            <mat-option value="Emergency">Emergency</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @if (newNotice.type === 'Event') {
+          <mat-form-field appearance="outline">
+            <mat-label>Event Date</mat-label>
+            <input matInput [matDatepicker]="eventDatePicker" name="eventDate" [(ngModel)]="newNotice.eventDate" required />
+            <mat-datepicker-toggle matSuffix [for]="eventDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #eventDatePicker></mat-datepicker>
+          </mat-form-field>
+        }
+      </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Content</mat-label>
+        <textarea matInput rows="3" name="content" [(ngModel)]="newNotice.content" required minlength="3" maxlength="3000"></textarea>
+      </mat-form-field>
+      <button mat-flat-button color="primary" [disabled]="!noticeForm.form.valid" (click)="submit()">Publish</button>
+    </form>
+  </mat-card>
+}
+
+<div class="notice-list">
+  @for (notice of notices(); track notice.id) {
+    <mat-card class="notice-card" [class.emergency]="notice.type === 'Emergency'">
+      <div class="notice-top">
+        <mat-chip-set><mat-chip [class]="'type-' + notice.type">{{ notice.type }}</mat-chip></mat-chip-set>
+        <span class="notice-date">{{ notice.createdAt | date: 'MMM d, y' }}</span>
+      </div>
+      <h3>{{ notice.title }}</h3>
+      <p>{{ notice.content }}</p>
+      @if (notice.eventDate) {
+        <p class="event-date"><mat-icon inline>event</mat-icon> {{ notice.eventDate | date: 'MMM d, y' }}</p>
+      }
+      <p class="by">By {{ notice.publishedByName }}</p>
+
+      @if (isAdmin()) {
+        <button mat-icon-button color="warn" class="delete-btn" (click)="delete(notice)"><mat-icon>delete</mat-icon></button>
+      }
+    </mat-card>
+  }
+</div>
+
+@if (notices().length === 0) {
+  <p class="empty">No notices published yet.</p>
+}

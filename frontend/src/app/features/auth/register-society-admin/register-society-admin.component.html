@@ -1,0 +1,91 @@
+<div class="min-h-screen w-full flex items-center justify-center px-4 py-12 relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-900 to-blue-800">
+  <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 bg-blue-400/25 rounded-full blur-3xl"></div>
+  <div class="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl"></div>
+
+  <a routerLink="/welcome" class="absolute top-6 left-6 z-10 flex items-center gap-1.5 text-white/75 hover:text-white text-sm font-semibold no-underline">
+    <mat-icon inline style="font-size: 18px; width: 18px; height: 18px;">arrow_back</mat-icon>
+    Back to Role Selection
+  </a>
+
+  <div class="relative z-10 w-full max-w-lg rounded-2xl border border-white/15 bg-white shadow-2xl p-8 sm:p-10">
+    <div class="flex flex-col items-center text-center mb-6">
+      <span class="text-5xl mb-2">🏢</span>
+      <h1 class="text-2xl font-bold text-slate-800">Society Secretary Registration</h1>
+      <p class="text-sm text-slate-500 mt-1">Create an account to manage your society</p>
+    </div>
+
+    <div class="flex justify-center mb-6">
+      <input type="file" accept="image/png,image/jpeg,image/webp" (change)="onPhotoSelected($event)" #photoInput hidden />
+      <button type="button" (click)="photoInput.click()" class="relative w-24 h-24 rounded-2xl border-2 border-dashed border-blue-400 flex items-center justify-center overflow-hidden bg-blue-50 hover:bg-blue-100 transition-colors">
+        @if (photoPreviewUrl()) {
+          <img [src]="photoPreviewUrl()" alt="Profile preview" class="w-full h-full object-cover" />
+        } @else {
+          <mat-icon class="!text-3xl !w-8 !h-8 text-blue-500">add_a_photo</mat-icon>
+        }
+        @if (uploadingPhoto()) {
+          <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+        }
+      </button>
+    </div>
+
+    <form (ngSubmit)="submit()" #f="ngForm" class="flex flex-col gap-1">
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Full Name</mat-label>
+        <input matInput name="fullName" [(ngModel)]="form.fullName" required minlength="2" maxlength="150" />
+      </mat-form-field>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="form.email" required email #emailModel="ngModel" autocomplete="username" />
+          @if (emailModel.invalid && emailModel.touched) { <mat-error>Enter a valid email address</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Mobile Number</mat-label>
+          <input matInput name="phoneNumber" [(ngModel)]="form.phoneNumber" required pattern="^[0-9+\(\)\-\s]{7,20}$" #phone="ngModel" />
+          @if (phone.invalid && phone.touched) { <mat-error>Enter a valid phone number</mat-error> }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Society you manage</mat-label>
+        <mat-select name="societyId" [(ngModel)]="form.societyId" required>
+          @for (s of societies(); track s.id) { <mat-option [value]="s.id">{{ s.name }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" name="password" [(ngModel)]="form.password" required minlength="8" pattern="^(?=.*[A-Z])(?=.*\d).{8,}$" #pw="ngModel" autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (pw.invalid && pw.touched) { <mat-error>8+ chars, 1 uppercase, 1 number</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Confirm Password</mat-label>
+          <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" name="confirmPassword" [(ngModel)]="confirmPassword" required autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="hideConfirmPassword = !hideConfirmPassword">
+            <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="rounded-lg bg-rose-50 text-rose-700 text-sm px-3 py-2 mb-2">{{ errorMessage() }}</div>
+      }
+
+      <button mat-flat-button type="submit" class="!bg-blue-700 !text-white !h-11 !rounded-xl !mt-1" [disabled]="loading() || !f.form.valid">
+        @if (loading()) { <mat-spinner diameter="20"></mat-spinner> } @else { <span>Create Account</span> }
+      </button>
+
+      <p class="text-center text-sm text-slate-500 mt-3">
+        Already have an account?
+        <a [routerLink]="['/login']" [queryParams]="{ role: 'SocietyAdmin' }" class="text-blue-700 font-bold no-underline hover:underline">Sign In</a>
+      </p>
+    </form>
+  </div>
+</div>

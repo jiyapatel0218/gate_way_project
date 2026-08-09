@@ -1,0 +1,20 @@
+<div class="page-header">
+  <div>
+    <h1>Reports</h1>
+    <p>Export society data as Excel or PDF</p>
+  </div>
+</div>
+
+<div class="reports-grid">
+  @for (report of reports; track report.key) {
+    <mat-card class="report-card">
+      <div class="report-icon"><mat-icon>{{ report.icon }}</mat-icon></div>
+      <h3>{{ report.label }}</h3>
+      <p>{{ report.description }}</p>
+      <div class="report-actions">
+        <button mat-stroked-button (click)="download(report, 'excel')"><mat-icon>grid_on</mat-icon> Excel</button>
+        <button mat-stroked-button (click)="download(report, 'pdf')"><mat-icon>picture_as_pdf</mat-icon> PDF</button>
+      </div>
+    </mat-card>
+  }
+</div>
