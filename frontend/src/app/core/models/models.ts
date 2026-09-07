@@ -35,6 +35,13 @@ export interface Block { id: string; societyId: string; name: string; descriptio
 export interface Wing { id: string; blockId: string; name: string; totalFloors: number; }
 export interface Flat { id: string; wingId: string; flatNumber: string; floor: number; areaSqFt: number; occupancyStatus: number; wingName: string; blockName: string; societyId: string; }
 
+export interface PaymentQrAssignment {
+  id: string; societyId: string; societyName: string; blockId?: string; blockName?: string;
+  assignedToUserId: string; assignedToUserName: string; qrImageUrl: string; payeeName?: string; isActive: boolean;
+}
+export interface AssignableUser { id: string; fullName: string; email: string; role: UserRole; }
+export interface MyPaymentQr { qrImageUrl: string; payeeName?: string; }
+
 export interface Resident {
   id: string; userId: string; fullName: string; email: string; phoneNumber?: string;
   flatId: string; flatNumber: string; wingName: string; blockName: string;

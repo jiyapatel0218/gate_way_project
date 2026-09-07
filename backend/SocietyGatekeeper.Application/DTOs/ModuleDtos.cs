@@ -23,6 +23,10 @@ public record CreateBlockRequest(
     [Required, StringLength(100, MinimumLength = 1)] string Name,
     [StringLength(300)] string? Description
 );
+public record UpdateBlockRequest(
+    [Required, StringLength(100, MinimumLength = 1)] string Name,
+    [StringLength(300)] string? Description
+);
 
 public record WingDto(Guid Id, Guid BlockId, string Name, int TotalFloors);
 public record CreateWingRequest(
@@ -164,6 +168,31 @@ public record VerifyPaymentRequest(
     [Required] string ProviderPaymentId,
     string? Signature
 );
+
+// ---------- Payment QR assignment ----------
+public record PaymentQrAssignmentDto(
+    Guid Id, Guid SocietyId, string SocietyName, Guid? BlockId, string? BlockName,
+    Guid AssignedToUserId, string AssignedToUserName, string QrImageUrl, string? PayeeName, bool IsActive
+);
+
+public record CreatePaymentQrAssignmentRequest(
+    [Required] Guid SocietyId,
+    Guid? BlockId,
+    [Required] Guid AssignedToUserId,
+    [Required, StringLength(500)] string QrImageUrl,
+    [StringLength(150)] string? PayeeName
+);
+
+public record UpdatePaymentQrAssignmentRequest(
+    Guid? BlockId,
+    [Required] Guid AssignedToUserId,
+    [Required, StringLength(500)] string QrImageUrl,
+    [StringLength(150)] string? PayeeName
+);
+
+public record AssignableUserDto(Guid Id, string FullName, string Email, UserRole Role);
+
+public record MyPaymentQrDto(string QrImageUrl, string? PayeeName);
 
 // ---------- Property ----------
 public record PropertyListingDto(

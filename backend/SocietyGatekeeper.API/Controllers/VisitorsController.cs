@@ -65,6 +65,7 @@ public class VisitorsController : ControllerBase
     }
 
     [HttpGet("today")]
+    [Authorize(Roles = "SecurityGuard,SuperAdmin,SocietyAdmin")]
     public async Task<ActionResult<List<VisitorDto>>> GetToday()
     {
         var societyId = User.GetSocietyId();

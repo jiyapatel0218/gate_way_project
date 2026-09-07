@@ -1,6 +1,14 @@
 .dialog-content {
   padding: 24px;
   min-width: 320px;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  color: rgba(0, 0, 0, 0.5);
 }
 
 .center-state {
@@ -13,6 +21,12 @@
 
   &.success { color: #1e7a46; }
   &.error { color: #c4432e; }
+}
+
+.status-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .big-icon {
@@ -37,15 +51,6 @@
   mat-icon { font-size: 16px; width: 16px; height: 16px; }
 }
 
-.mock-note {
-  font-size: 12.5px;
-  color: rgba(0, 0, 0, 0.6);
-  background: #f7faf8;
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 16px;
-}
-
 .amount-row {
   display: flex;
   justify-content: space-between;
@@ -54,9 +59,77 @@
   padding: 12px 0;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 
   b { font-size: 20px; color: #0e5e4c; }
+}
+
+.order-label {
+  font-size: 12.5px;
+  color: rgba(0, 0, 0, 0.55);
+  margin: 0 0 16px;
+}
+
+.qr-scan {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.qr-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 auto 14px;
+  width: fit-content;
+}
+
+.qr-image {
+  width: 220px;
+  height: auto;
+  max-height: 380px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.payee-hint {
+  text-align: center;
+  font-size: 12.5px;
+  color: rgba(0, 0, 0, 0.55);
+  margin: 0 0 4px;
+}
+
+.scan-hint {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.65);
+  margin-bottom: 18px;
+}
+
+.details-card {
+  width: 100%;
+  background: #f7faf8;
+  border-radius: 10px;
+  padding: 4px 14px;
+  margin: 4px 0 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  padding: 10px 0;
+
+  &:not(:last-child) { border-bottom: 1px solid #e8ede9; }
+
+  span { color: rgba(0, 0, 0, 0.6); }
+  b { color: #0e5e4c; text-align: right; word-break: break-all; }
 }
 
 .full-width { width: 100%; margin-bottom: 8px; }

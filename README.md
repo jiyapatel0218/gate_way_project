@@ -79,7 +79,45 @@ frontend/
 database/           idempotent SQL schema scripts (regenerate via `dotnet ef migrations script`)
 ```
 
+## Payments (Razorpay)
+
+The payment gateway is config-switchable between `Mock` (always succeeds, no external calls — the default) and `Razorpay`, set via `PaymentGateway:Provider` in `appsettings.json`.
+
+### Getting your Razorpay Key ID / Key Secret
+
+1. Sign up / log in at the [Razorpay Dashboard](https://dashboard.razorpay.com/).
+2. Go to **Settings → API Keys**.
+3. Click **Generate Test Key** for development, or **Generate Live Key** for production (live mode requires KYC/business verification to be completed first).
+4. Razorpay shows the **Key Secret only once** — copy both values immediately. If you lose the secret, you must regenerate the key pair.
+5. Test-mode keys are prefixed `rzp_test_...`, live keys `rzp_live_...`. Use test keys during development; Razorpay's [test card/UPI numbers](https://razorpay.com/docs/payments/payments/test-card-upi-details/) let you exercise success and failure paths without moving real money.
+
+### Where to configure them
+
+Credentials are **never hard-coded** — `RazorpayPaymentGatewayService` reads them from `IConfiguration` at `PaymentGateway:Razorpay:KeyId` / `KeySecret` / `WebhookSecret`, which are empty placeholders in the committed `appsettings.json`.
+
+- **Development**: copy `SocietyGatekeeper.API/appsettings.Local.json.example` to `appsettings.Local.json` (gitignored) and fill in your test keys — see [Setup](#1-backend). Then set `PaymentGateway:Provider` to `Razorpay` in `appsettings.json`.
+- **Production**: don't ship a `Local.json` file to a server. Set the equivalent environment variables instead (ASP.NET Core's configuration binder maps `__` to nested keys):
+  ```
+  PaymentGateway__Razorpay__KeyId=rzp_live_...
+  PaymentGateway__Razorpay__KeySecret=...
+  PaymentGateway__Razorpay__WebhookSecret=...
+  PaymentGateway__Provider=Razorpay
+  ```
+  or your platform's secret manager (Azure Key Vault, AWS Secrets Manager, etc.) wired in as an additional configuration provider in `Program.cs`.
+
+### Payment flow
+
+1. **Create order** — `POST /api/maintenance/{invoiceId}/payments/online/create-order` calls Razorpay's Orders API and returns an order id + the public Key ID (never the secret) to the browser.
+2. **Checkout** — the frontend loads `checkout.razorpay.com/v1/checkout.js` and opens Razorpay's hosted checkout with that order id.
+3. **Verify** — on success, Razorpay's `handler` callback returns a payment id + signature to the browser, which posts them to `POST /api/maintenance/payments/online/verify`. The backend recomputes `HMAC-SHA256("{order_id}|{payment_id}", key_secret)` and compares it against the signature before marking the invoice paid — this is what makes the result trustworthy rather than just believing the client.
+4. **Webhook (fallback)** — `POST /api/maintenance/payments/online/webhook` handles the case where a payment succeeds at Razorpay but the browser never completes step 3 (closed tab, dropped connection). It verifies the `X-Razorpay-Signature` header against the raw request body using `PaymentGateway:Razorpay:WebhookSecret`, and is idempotent with step 3 (whichever arrives first marks the order paid; the other becomes a no-op). To enable it:
+   - In the Razorpay Dashboard, go to **Settings → Webhooks → Add New Webhook**.
+   - URL: `https://<your-domain>/api/maintenance/payments/online/webhook`.
+   - Active event: `payment.captured`.
+   - Razorpay generates a webhook secret at that point — put it in `PaymentGateway:Razorpay:WebhookSecret`. It's a separate value from the Key Secret.
+   - The webhook is a no-op (`404`) until `WebhookSecret` is configured, so it's safe to leave unset in development.
+5. **Failure handling** — if signature verification fails, the order is marked `Failed` and the invoice stays unpaid; the resident sees an error and can retry, which creates a fresh order.
+
 ## Notes
 
 - **OTP delivery (Forgot Password) is not connected to a real email/SMS provider** — verification codes are returned directly in the API response and shown on-screen (`devOtp`) for local testing. Wire in a real SMTP or SMS provider before relying on this in production.
-- The online payment gateway defaults to a `Mock` provider (`PaymentGateway:Provider` in `appsettings.json`) that always succeeds — switch to `Razorpay` and supply real keys to go live.

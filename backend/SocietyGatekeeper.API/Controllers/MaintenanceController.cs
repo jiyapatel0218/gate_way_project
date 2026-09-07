@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +23,15 @@ public class MaintenanceController : ControllerBase
     private readonly INotificationService _notificationService;
     private readonly IPaymentGatewayService _paymentGateway;
     private readonly InvoiceService _invoiceService;
+    private readonly IConfiguration _config;
 
-    public MaintenanceController(ApplicationDbContext db, INotificationService notificationService, IPaymentGatewayService paymentGateway, InvoiceService invoiceService)
+    public MaintenanceController(ApplicationDbContext db, INotificationService notificationService, IPaymentGatewayService paymentGateway, InvoiceService invoiceService, IConfiguration config)
     {
         _db = db;
         _notificationService = notificationService;
         _paymentGateway = paymentGateway;
         _invoiceService = invoiceService;
+        _config = config;
     }
 
     private IQueryable<MaintenanceInvoice> BaseQuery()
@@ -203,18 +208,71 @@ public class MaintenanceController : ControllerBase
             return BadRequest(new { message = "Payment verification failed." });
         }
 
+        var (payment, generatedInvoice) = await MarkOrderPaidAsync(order, request.ProviderPaymentId, User.GetUserId());
+
+        var recordedBy = await _db.Users.FindAsync(payment.RecordedByUserId);
+        return Ok(new PaymentDto(payment.Id, payment.Amount, payment.Mode, payment.TransactionReference, payment.PaidOn, payment.ReceiptNumber, recordedBy?.FullName ?? "", generatedInvoice.Id, generatedInvoice.InvoiceNumber));
+    }
+
+    // Server-to-server fallback for the client-driven /verify call above: if the browser closes
+    // or the network drops after Razorpay captures the payment but before the client can call
+    // /verify, this webhook is what still marks the invoice paid. Configure the webhook URL and
+    // its secret in the Razorpay Dashboard (Settings > Webhooks) — see README for details.
+    [HttpPost("payments/online/webhook")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RazorpayWebhook()
+    {
+        var webhookSecret = _config["PaymentGateway:Razorpay:WebhookSecret"];
+        if (string.IsNullOrEmpty(webhookSecret)) return NotFound();
+
+        Request.EnableBuffering();
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true);
+        var rawBody = await reader.ReadToEndAsync();
+        Request.Body.Position = 0;
+
+        var signature = Request.Headers["X-Razorpay-Signature"].ToString();
+        var expectedSignature = Convert.ToHexString(
+            HMACSHA256.HashData(Encoding.UTF8.GetBytes(webhookSecret), Encoding.UTF8.GetBytes(rawBody))
+        ).ToLowerInvariant();
+
+        if (string.IsNullOrEmpty(signature) || !CryptographicOperations.FixedTimeEquals(
+            Encoding.UTF8.GetBytes(expectedSignature), Encoding.UTF8.GetBytes(signature.ToLowerInvariant())))
+        {
+            return Unauthorized();
+        }
+
+        using var json = JsonDocument.Parse(rawBody);
+        var root = json.RootElement;
+        if (root.GetProperty("event").GetString() != "payment.captured") return Ok();
+
+        var paymentEntity = root.GetProperty("payload").GetProperty("payment").GetProperty("entity");
+        var providerOrderId = paymentEntity.GetProperty("order_id").GetString()!;
+        var providerPaymentId = paymentEntity.GetProperty("id").GetString()!;
+
+        var order = await _db.PaymentOrders
+            .Include(o => o.MaintenanceInvoice).ThenInclude(i => i.Flat).ThenInclude(f => f.Residents)
+            .FirstOrDefaultAsync(o => o.ProviderOrderId == providerOrderId);
+
+        // Idempotent: unknown order, or already marked paid by the client-driven /verify call.
+        if (order is null || order.Status == PaymentOrderStatus.Paid) return Ok();
+
+        await MarkOrderPaidAsync(order, providerPaymentId, order.CreatedByUserId);
+        return Ok();
+    }
+
+    private async Task<(Payment Payment, Invoice Invoice)> MarkOrderPaidAsync(PaymentOrder order, string providerPaymentId, Guid recordedByUserId)
+    {
         order.Status = PaymentOrderStatus.Paid;
 
         var invoice = order.MaintenanceInvoice;
-        var userId = User.GetUserId();
 
         var payment = new Payment
         {
             MaintenanceInvoiceId = invoice.Id,
             Amount = order.Amount,
             Mode = PaymentMode.Online,
-            TransactionReference = request.ProviderPaymentId,
-            RecordedByUserId = userId,
+            TransactionReference = providerPaymentId,
+            RecordedByUserId = recordedByUserId,
             ReceiptNumber = $"RCPT-{DateTime.UtcNow:yyyyMMddHHmmss}"
         };
         _db.Payments.Add(payment);
@@ -234,8 +292,7 @@ public class MaintenanceController : ControllerBase
                 "Payment Successful", $"Online payment of {order.Amount:C} received for {invoice.Month} {invoice.Year}.", $"/maintenance/{invoice.Id}");
         }
 
-        var recordedBy = await _db.Users.FindAsync(userId);
-        return Ok(new PaymentDto(payment.Id, payment.Amount, payment.Mode, payment.TransactionReference, payment.PaidOn, payment.ReceiptNumber, recordedBy?.FullName ?? "", generatedInvoice.Id, generatedInvoice.InvoiceNumber));
+        return (payment, generatedInvoice);
     }
 
     [HttpPut("payments/{paymentId}")]

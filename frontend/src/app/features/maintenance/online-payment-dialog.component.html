@@ -6,25 +6,37 @@
         <p>Starting secure payment...</p>
       </div>
     }
-    @case ('mock-checkout') {
-      <div class="mock-checkout">
+    @case ('qr-scan') {
+      <div class="qr-scan">
+        <button mat-icon-button class="close-btn" aria-label="Close" (click)="close()">
+          <mat-icon>close</mat-icon>
+        </button>
+
         <div class="gateway-badge">
-          <mat-icon>lock</mat-icon>
-          <span>Simulated Payment Gateway</span>
+          <mat-icon>qr_code_scanner</mat-icon>
+          <span>Scan & Pay</span>
         </div>
-        <p class="mock-note">
-          This app is running in <b>Mock</b> payment mode for development &mdash; no real gateway is
-          connected yet. Swap in real Razorpay keys later to accept live payments; no code changes needed.
-        </p>
+
         <div class="amount-row">
           <span>Amount to pay</span>
           <b>₹{{ amount() | number: '1.2-2' }}</b>
         </div>
-        <button mat-flat-button color="primary" class="full-width" (click)="simulateSuccessfulPayment()">
+        <p class="order-label">{{ data.label }}</p>
+
+        <div class="qr-card">
+          <img [src]="qrImageUrl()" alt="Payment QR code" class="qr-image" />
+        </div>
+
+        @if (payeeName()) {
+          <p class="payee-hint">Paying to: <b>{{ payeeName() }}</b></p>
+        }
+        <p class="scan-hint">Scan the QR code using any UPI app to complete your payment.</p>
+
+        <button mat-flat-button color="primary" class="full-width" (click)="confirmManualPayment()">
           <mat-icon>check_circle</mat-icon>
-          Simulate Successful Payment
+          Payment Completed
         </button>
-        <button mat-button class="full-width" (click)="cancel()">Cancel</button>
+        <button mat-button class="full-width" (click)="cancelPayment()">Cancel</button>
       </div>
     }
     @case ('processing') {
@@ -36,14 +48,35 @@
     @case ('success') {
       <div class="center-state success">
         <mat-icon class="big-icon">check_circle</mat-icon>
-        <p>Payment successful!</p>
+        <p class="status-title">Payment Successful</p>
+
+        @if (paymentResult(); as payment) {
+          <div class="details-card">
+            <div class="detail-row">
+              <span>Transaction ID</span>
+              <b>{{ payment.transactionReference }}</b>
+            </div>
+            <div class="detail-row">
+              <span>Amount Paid</span>
+              <b>₹{{ payment.amount | number: '1.2-2' }}</b>
+            </div>
+            <div class="detail-row">
+              <span>Date & Time</span>
+              <b>{{ payment.paidOn | date: 'medium' }}</b>
+            </div>
+          </div>
+        }
+
+        <button mat-flat-button color="primary" class="full-width" (click)="done()">Done</button>
       </div>
     }
     @case ('error') {
       <div class="center-state error">
-        <mat-icon class="big-icon">error</mat-icon>
+        <mat-icon class="big-icon">{{ errorTitle() === 'Payment Cancelled' ? 'cancel' : 'error' }}</mat-icon>
+        <p class="status-title">{{ errorTitle() }}</p>
         <p>{{ errorMessage() }}</p>
-        <button mat-button (click)="cancel()">Close</button>
+        <button mat-flat-button color="primary" class="full-width" (click)="retry()">Try Again</button>
+        <button mat-button class="full-width" (click)="close()">Close</button>
       </div>
     }
   }

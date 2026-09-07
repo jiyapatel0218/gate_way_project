@@ -5,8 +5,6 @@ export const routes: Routes = [
   { path: 'welcome', loadComponent: () => import('./features/auth/role-select/role-select.component').then((m) => m.RoleSelectComponent) },
   { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then((m) => m.LoginComponent) },
   { path: 'register/resident', loadComponent: () => import('./features/auth/register-resident/register-resident.component').then((m) => m.RegisterResidentComponent) },
-  { path: 'register/society-secretary', loadComponent: () => import('./features/auth/register-society-admin/register-society-admin.component').then((m) => m.RegisterSocietyAdminComponent) },
-  { path: 'register/security-guard', loadComponent: () => import('./features/auth/register-security-guard/register-security-guard.component').then((m) => m.RegisterSecurityGuardComponent) },
   { path: 'admin-login', loadComponent: () => import('./features/auth/admin-login/admin-login.component').then((m) => m.AdminLoginComponent) },
   { path: 'reset-password', loadComponent: () => import('./features/auth/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent) },
   { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent) },
@@ -84,6 +82,11 @@ export const routes: Routes = [
         path: 'masters',
         canActivate: [roleGuard(['SuperAdmin', 'SocietyAdmin'])],
         loadComponent: () => import('./features/masters/masters.component').then((m) => m.MastersComponent)
+      },
+      {
+        path: 'payment-qr-codes',
+        canActivate: [roleGuard(['SuperAdmin', 'SocietyAdmin'])],
+        loadComponent: () => import('./features/payment-qr-codes/payment-qr-codes.component').then((m) => m.PaymentQrCodesComponent)
       },
       {
         path: 'reports',

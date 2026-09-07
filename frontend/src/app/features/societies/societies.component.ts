@@ -34,6 +34,9 @@ export class SocietiesComponent implements OnInit {
   newBlockName: Record<string, string> = {};
   newUnit: Record<string, { unitNumber: string; floor: number }> = {};
 
+  editingBlockId = signal<string | null>(null);
+  editBlockName: Record<string, string> = {};
+
   constructor(private structureService: SocietyStructureService) {}
 
   ngOnInit(): void {
@@ -75,6 +78,37 @@ export class SocietiesComponent implements OnInit {
       this.blocksBySociety.update((m) => ({ ...m, [societyId]: [...(m[societyId] ?? []), block] }));
       this.newUnit[block.id] ??= { unitNumber: '', floor: 1 };
       this.newBlockName[societyId] = '';
+    });
+  }
+
+  startEditBlock(block: Block): void {
+    this.editingBlockId.set(block.id);
+    this.editBlockName[block.id] = block.name;
+  }
+
+  cancelEditBlock(): void {
+    this.editingBlockId.set(null);
+  }
+
+  saveBlockEdit(societyId: string, block: Block): void {
+    const name = this.editBlockName[block.id]?.trim();
+    if (!name) return;
+    this.structureService.updateBlock(block.id, { name }).subscribe((updated) => {
+      this.blocksBySociety.update((m) => ({
+        ...m,
+        [societyId]: (m[societyId] ?? []).map((b) => (b.id === block.id ? updated : b))
+      }));
+      this.editingBlockId.set(null);
+    });
+  }
+
+  deleteBlock(societyId: string, block: Block): void {
+    if (!confirm(`Delete block "${block.name}"? This cannot be undone.`)) return;
+    this.structureService.deleteBlock(block.id).subscribe(() => {
+      this.blocksBySociety.update((m) => ({
+        ...m,
+        [societyId]: (m[societyId] ?? []).filter((b) => b.id !== block.id)
+      }));
     });
   }
 

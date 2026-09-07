@@ -63,7 +63,34 @@
           @for (block of blocksBySociety()[society.id] ?? []; track block.id) {
             <mat-expansion-panel (opened)="loadUnits(block)">
               <mat-expansion-panel-header>
-                <mat-panel-title>{{ block.name }}</mat-panel-title>
+                @if (editingBlockId() === block.id) {
+                  <mat-panel-title (click)="$event.stopPropagation()">
+                    <mat-form-field appearance="outline" class="inline-field small">
+                      <input matInput [(ngModel)]="editBlockName[block.id]" (click)="$event.stopPropagation()" />
+                    </mat-form-field>
+                  </mat-panel-title>
+                } @else {
+                  <mat-panel-title>{{ block.name }}</mat-panel-title>
+                }
+                @if (editingBlockId() === block.id) {
+                  <mat-panel-description (click)="$event.stopPropagation()">
+                    <button mat-icon-button (click)="saveBlockEdit(society.id, block)" title="Save">
+                      <mat-icon>check</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="cancelEditBlock()" title="Cancel">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-panel-description>
+                } @else {
+                  <mat-panel-description>
+                    <button mat-icon-button (click)="$event.stopPropagation(); startEditBlock(block)" title="Edit block">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="$event.stopPropagation(); deleteBlock(society.id, block)" title="Delete block">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </mat-panel-description>
+                }
               </mat-expansion-panel-header>
 
               <div class="add-row">

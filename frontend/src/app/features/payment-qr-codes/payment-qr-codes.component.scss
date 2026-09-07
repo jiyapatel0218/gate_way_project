@@ -1,0 +1,33 @@
+table { width: 100%; }
+
+.society-picker {
+  width: 320px;
+  max-width: 100%;
+}
+
+.qr-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.qr-preview {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 4px;
+  background: #fff;
+}
+
+.qr-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  padding: 2px;
+  background: #fff;
+}

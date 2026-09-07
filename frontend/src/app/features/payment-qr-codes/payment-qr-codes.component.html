@@ -1,0 +1,126 @@
+<div class="page-header">
+  <div>
+    <h1>Payment QR Codes</h1>
+    <p>Assign the QR code residents scan to pay maintenance for a society or a specific block</p>
+  </div>
+  @if (selectedSocietyId()) {
+    <button mat-flat-button color="primary" (click)="toggleForm()">
+      <mat-icon>{{ showForm() ? 'close' : 'add' }}</mat-icon>
+      {{ showForm() ? 'Cancel' : 'Assign QR Code' }}
+    </button>
+  }
+</div>
+
+@if (isSuperAdmin()) {
+  <mat-card class="form-card">
+    <mat-form-field appearance="outline" class="society-picker">
+      <mat-label>Society</mat-label>
+      <mat-select [ngModel]="selectedSocietyId()" (ngModelChange)="onSocietyChange($event)">
+        @for (s of societies(); track s.id) {
+          <mat-option [value]="s.id">{{ s.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </mat-card>
+}
+
+@if (showForm()) {
+  <mat-card class="form-card">
+    <h2>{{ editingId() ? 'Update QR Assignment' : 'New QR Assignment' }}</h2>
+    <form #qrForm="ngForm">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Block</mat-label>
+          <mat-select name="blockId" [(ngModel)]="form.blockId">
+            <mat-option value="">Whole society (no specific block)</mat-option>
+            @for (b of blocks(); track b.id) {
+              <mat-option [value]="b.id">{{ b.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>User / Owner receiving payment</mat-label>
+          <mat-select name="assignedToUserId" [(ngModel)]="form.assignedToUserId" required>
+            @for (u of assignableUsers(); track u.id) {
+              <mat-option [value]="u.id">{{ u.fullName }} ({{ u.role }})</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Payee display name (optional)</mat-label>
+          <input matInput name="payeeName" [(ngModel)]="form.payeeName" maxlength="150" placeholder="e.g. GreenGate Residency" />
+        </mat-form-field>
+      </div>
+
+      <div class="qr-upload-row">
+        <input type="file" accept="image/png,image/jpeg,image/webp" (change)="onQrFileSelected($event)" #qrInput hidden />
+        <button type="button" mat-stroked-button (click)="qrInput.click()" [disabled]="uploading()">
+          <mat-icon>upload</mat-icon>
+          {{ uploading() ? 'Uploading...' : 'Upload QR Image' }}
+        </button>
+        @if (uploading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        }
+        @if (qrPreviewUrl(); as preview) {
+          <img [src]="preview" alt="QR preview" class="qr-preview" />
+        }
+      </div>
+
+      <button mat-flat-button color="primary" [disabled]="!qrForm.form.valid || !form.qrImageUrl || uploading()" (click)="save()">
+        {{ editingId() ? 'Update' : 'Save Assignment' }}
+      </button>
+    </form>
+  </mat-card>
+}
+
+@if (selectedSocietyId()) {
+  <mat-card class="table-card">
+    <table mat-table [dataSource]="assignments()" class="full-width">
+      <ng-container matColumnDef="scope">
+        <th mat-header-cell *matHeaderCellDef>Scope</th>
+        <td mat-cell *matCellDef="let a">{{ a.blockName ? (a.societyName + ' / ' + a.blockName) : (a.societyName + ' (whole society)') }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="assignedTo">
+        <th mat-header-cell *matHeaderCellDef>Assigned To</th>
+        <td mat-cell *matCellDef="let a">{{ a.assignedToUserName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="qr">
+        <th mat-header-cell *matHeaderCellDef>QR</th>
+        <td mat-cell *matCellDef="let a"><img [src]="resolveMediaUrl(a.qrImageUrl)" alt="QR" class="qr-thumb" /></td>
+      </ng-container>
+
+      <ng-container matColumnDef="payeeName">
+        <th mat-header-cell *matHeaderCellDef>Payee Name</th>
+        <td mat-cell *matCellDef="let a">{{ a.payeeName || '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Active</th>
+        <td mat-cell *matCellDef="let a"><mat-slide-toggle [checked]="a.isActive" (change)="toggleActive(a)"></mat-slide-toggle></td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let a">
+          <button mat-icon-button matTooltip="Edit" (click)="startEdit(a)"><mat-icon>edit</mat-icon></button>
+          <button mat-icon-button color="warn" matTooltip="Remove" (click)="remove(a)"><mat-icon>delete</mat-icon></button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    @if (assignments().length === 0) {
+      <p class="empty">No QR codes assigned yet for this society.</p>
+    }
+  </mat-card>
+} @else {
+  <mat-card class="form-card">
+    <p class="empty">Select a society above to manage its payment QR codes.</p>
+  </mat-card>
+}

@@ -180,5 +180,26 @@ public static class DataSeeder
                 }
             }
         }
+
+        // Default payment QR assignment for the demo society, so online payments keep working
+        // out of the box until an admin assigns/replaces it from the Payment QR screen. Runs on
+        // every startup (not just first-run seeding above) so it also backfills existing databases.
+        if (!await db.PaymentQrAssignments.AnyAsync())
+        {
+            var demoSociety = await db.Societies.FirstOrDefaultAsync(s => s.Name == "GreenGate Residency");
+            var demoAdmin = await userManager.FindByEmailAsync("admin@greengate.com");
+            if (demoSociety is not null && demoAdmin is not null)
+            {
+                db.PaymentQrAssignments.Add(new PaymentQrAssignment
+                {
+                    SocietyId = demoSociety.Id,
+                    BlockId = null,
+                    AssignedToUserId = demoAdmin.Id,
+                    QrImageUrl = "/uploads/qr-codes/payment-qr.jpg",
+                    PayeeName = "GreenGate Residency"
+                });
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -41,6 +41,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    public DbSet<PaymentQrAssignment> PaymentQrAssignments => Set<PaymentQrAssignment>();
+
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<LoginHistory> LoginHistories => Set<LoginHistory>();
     public DbSet<PasswordResetOtp> PasswordResetOtps => Set<PasswordResetOtp>();
@@ -68,6 +70,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.Entity<Visitor>().HasQueryFilter(e => !e.IsDeleted);
         builder.Entity<PropertyListing>().HasQueryFilter(e => !e.IsDeleted);
         builder.Entity<Notice>().HasQueryFilter(e => !e.IsDeleted);
+        builder.Entity<PaymentQrAssignment>().HasQueryFilter(e => !e.IsDeleted);
 
         // Society hierarchy
         builder.Entity<Block>()
@@ -209,6 +212,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .Property(p => p.Amount).HasColumnType("decimal(12,2)");
         builder.Entity<MaintenanceType>()
             .Property(m => m.DefaultAmount).HasColumnType("decimal(12,2)");
+
+        // Payment QR assignments
+        builder.Entity<PaymentQrAssignment>()
+            .HasOne(a => a.Society).WithMany()
+            .HasForeignKey(a => a.SocietyId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<PaymentQrAssignment>()
+            .HasOne(a => a.Block).WithMany()
+            .HasForeignKey(a => a.BlockId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<PaymentQrAssignment>()
+            .HasOne(a => a.AssignedToUser).WithMany()
+            .HasForeignKey(a => a.AssignedToUserId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<PaymentQrAssignment>().HasIndex(a => new { a.SocietyId, a.BlockId });
         builder.Entity<PropertyListing>()
             .Property(p => p.Price).HasColumnType("decimal(14,2)");
 

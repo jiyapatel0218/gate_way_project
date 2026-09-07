@@ -151,76 +151,10 @@ public class AuthController : ControllerBase
         return Ok(await BuildLoginResponseAsync(user));
     }
 
-    [HttpPost("register-society-admin")]
-    public async Task<ActionResult<LoginResponse>> RegisterSocietyAdmin(RegisterSocietyAdminRequest request)
-    {
-        if (await _userManager.FindByEmailAsync(request.Email) is not null)
-            return BadRequest(new { message = "An account with this email already exists." });
-
-        var societyExists = await _db.Societies.AnyAsync(s => s.Id == request.SocietyId);
-        if (!societyExists) return BadRequest(new { message = "Selected society not found." });
-
-        var user = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            FullName = request.FullName,
-            Role = UserRole.SocietyAdmin,
-            SocietyId = request.SocietyId,
-            ProfileImageUrl = request.ProfileImageUrl,
-            EmailConfirmed = true,
-            IsActive = true
-        };
-
-        var createResult = await _userManager.CreateAsync(user, request.Password);
-        if (!createResult.Succeeded)
-            return BadRequest(new { errors = createResult.Errors.Select(e => e.Description) });
-
-        await _userManager.AddToRoleAsync(user, nameof(UserRole.SocietyAdmin));
-
-        return Ok(await BuildLoginResponseAsync(user));
-    }
-
-    [HttpPost("register-security-guard")]
-    public async Task<ActionResult<LoginResponse>> RegisterSecurityGuard(RegisterSecurityGuardRequest request)
-    {
-        if (await _userManager.FindByEmailAsync(request.Email) is not null)
-            return BadRequest(new { message = "An account with this email already exists." });
-
-        var societyExists = await _db.Societies.AnyAsync(s => s.Id == request.SocietyId);
-        if (!societyExists) return BadRequest(new { message = "Selected society not found." });
-
-        var user = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            FullName = request.FullName,
-            Role = UserRole.SecurityGuard,
-            SocietyId = request.SocietyId,
-            ProfileImageUrl = request.ProfileImageUrl,
-            EmailConfirmed = true,
-            IsActive = true
-        };
-
-        var createResult = await _userManager.CreateAsync(user, request.Password);
-        if (!createResult.Succeeded)
-            return BadRequest(new { errors = createResult.Errors.Select(e => e.Description) });
-
-        await _userManager.AddToRoleAsync(user, nameof(UserRole.SecurityGuard));
-
-        _db.SecurityGuards.Add(new SecurityGuard
-        {
-            UserId = user.Id,
-            SocietyId = request.SocietyId,
-            ShiftTiming = request.ShiftTiming,
-            GuardCode = request.GuardCode
-        });
-        await _db.SaveChangesAsync();
-
-        return Ok(await BuildLoginResponseAsync(user));
-    }
+    // Society Secretary and Security Guard accounts are privileged (they grant access to the
+    // gate/admin application, not just a resident's own flat) and must never be self-service.
+    // They can only be created by an already-authenticated SuperAdmin/SocietyAdmin, via
+    // UsersController.CreateSocietyAdmin and SecurityGuardsController.Create respectively.
 
     private async Task<LoginResponse> BuildLoginResponseAsync(ApplicationUser user)
     {

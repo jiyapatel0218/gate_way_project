@@ -109,7 +109,11 @@ public class BlocksController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<BlockDto>>> GetBySociety([FromQuery] Guid societyId)
     {
-        var blocks = await _db.Blocks.Where(b => b.SocietyId == societyId)
+        // A caller scoped to a single society (SocietyAdmin) can never list another society's
+        // blocks, regardless of what societyId they pass in.
+        var effectiveSocietyId = User.GetSocietyId() ?? societyId;
+
+        var blocks = await _db.Blocks.Where(b => b.SocietyId == effectiveSocietyId)
             .Select(b => new BlockDto(b.Id, b.SocietyId, b.Name, b.Description))
             .ToListAsync();
         return Ok(blocks);
@@ -118,8 +122,30 @@ public class BlocksController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<BlockDto>> Create(CreateBlockRequest request)
     {
+        var callerSocietyId = User.GetSocietyId();
+        if (callerSocietyId.HasValue && request.SocietyId != callerSocietyId.Value)
+            return Forbid();
+
         var block = new Block { SocietyId = request.SocietyId, Name = request.Name, Description = request.Description };
         _db.Blocks.Add(block);
+        await _db.SaveChangesAsync();
+        return Ok(new BlockDto(block.Id, block.SocietyId, block.Name, block.Description));
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<BlockDto>> Update(Guid id, UpdateBlockRequest request)
+    {
+        var block = await _db.Blocks.FindAsync(id);
+        if (block is null) return NotFound();
+
+        var callerSocietyId = User.GetSocietyId();
+        if (callerSocietyId.HasValue && block.SocietyId != callerSocietyId.Value)
+            return Forbid();
+
+        block.Name = request.Name;
+        block.Description = request.Description;
+        block.UpdatedAt = DateTime.UtcNow;
+
         await _db.SaveChangesAsync();
         return Ok(new BlockDto(block.Id, block.SocietyId, block.Name, block.Description));
     }
@@ -129,6 +155,11 @@ public class BlocksController : ControllerBase
     {
         var block = await _db.Blocks.FindAsync(id);
         if (block is null) return NotFound();
+
+        var callerSocietyId = User.GetSocietyId();
+        if (callerSocietyId.HasValue && block.SocietyId != callerSocietyId.Value)
+            return Forbid();
+
         block.IsDeleted = true;
         await _db.SaveChangesAsync();
         return NoContent();

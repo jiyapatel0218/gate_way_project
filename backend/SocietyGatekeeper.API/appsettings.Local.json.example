@@ -4,5 +4,12 @@
   },
   "Otp": {
     "Pepper": "REPLACE_WITH_A_LONG_RANDOM_SECRET"
+  },
+  "PaymentGateway": {
+    "Razorpay": {
+      "KeyId": "rzp_test_XXXXXXXXXXXXXX",
+      "KeySecret": "REPLACE_WITH_YOUR_RAZORPAY_KEY_SECRET",
+      "WebhookSecret": "REPLACE_WITH_YOUR_RAZORPAY_WEBHOOK_SECRET"
+    }
   }
 }

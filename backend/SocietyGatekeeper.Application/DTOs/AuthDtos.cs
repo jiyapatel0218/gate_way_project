@@ -58,23 +58,3 @@ public record RegisterResidentRequest(
     bool IsOwner,
     [StringLength(500)] string? ProfileImageUrl
 );
-
-public record RegisterSocietyAdminRequest(
-    [Required, StringLength(150, MinimumLength = 2)] string FullName,
-    [Required, EmailAddress, StringLength(256)] string Email,
-    [Required, Phone, StringLength(20)] string PhoneNumber,
-    [Required, StrongPassword] string Password,
-    [Required] Guid SocietyId,
-    [StringLength(500)] string? ProfileImageUrl
-);
-
-public record RegisterSecurityGuardRequest(
-    [Required, StringLength(150, MinimumLength = 2)] string FullName,
-    [Required, EmailAddress, StringLength(256)] string Email,
-    [Required, Phone, StringLength(20)] string PhoneNumber,
-    [Required, StrongPassword] string Password,
-    [Required] Guid SocietyId,
-    [Required, StringLength(100, MinimumLength = 1)] string ShiftTiming,
-    [StringLength(30)] string? GuardCode,
-    [StringLength(500)] string? ProfileImageUrl
-);

@@ -18,10 +18,12 @@ interface RolePresentation {
   registerRoute: string | null;
 }
 
+// Society Secretary and Security Guard accounts are privileged and provisioned only by an
+// existing admin from within the app — never self-service, so these two have no registerRoute.
 const ROLE_PRESENTATION: Record<string, RolePresentation> = {
-  SocietyAdmin: { emoji: '🏢', title: 'Society Secretary Portal', registerRoute: '/register/society-secretary' },
+  SocietyAdmin: { emoji: '🏢', title: 'Society Secretary Portal', registerRoute: null },
   Resident: { emoji: '🏠', title: 'Resident Portal', registerRoute: '/register/resident' },
-  SecurityGuard: { emoji: '🛡️', title: 'Security Guard Portal', registerRoute: '/register/security-guard' }
+  SecurityGuard: { emoji: '🛡️', title: 'Security Guard Portal', registerRoute: null }
 };
 const DEFAULT_PRESENTATION: RolePresentation = { emoji: '🏘️', title: 'Welcome back', registerRoute: '/register/resident' };
 

@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  Block, Complaint, ComplaintRemark, DashboardSummary, EmergencyContact, FamilyMember,
-  Flat, Invoice, MaintenanceInvoice, MasterItem, Notice, Payment, PropertyListing, Resident,
+  AssignableUser, Block, Complaint, ComplaintRemark, DashboardSummary, EmergencyContact, FamilyMember,
+  Flat, Invoice, MaintenanceInvoice, MasterItem, MyPaymentQr, Notice, Payment, PaymentQrAssignment, PropertyListing, Resident,
   Society, Vehicle, Visitor, Wing
 } from '../models/models';
 
@@ -35,11 +35,19 @@ export class PublicService {
 @Injectable({ providedIn: 'root' })
 export class UploadsService {
   constructor(private http: HttpClient) {}
-  uploadPhoto(file: File): Observable<{ url: string }> {
+  uploadPhoto(file: File, folder: 'profile-photos' | 'qr-codes' = 'profile-photos'): Observable<{ url: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ url: string }>(`${base}/uploads/photo`, formData);
+    return this.http.post<{ url: string }>(`${base}/uploads/photo`, formData, { params: { folder } });
   }
+}
+
+/** Backend-uploaded files (e.g. /uploads/qr-codes/x.png) are served by the API, not the Angular dev server — resolve them to an absolute URL. Static frontend assets (already absolute, or served from Angular's own public/ folder) pass through unchanged. */
+export function resolveMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/uploads/')) return `${base.replace(/\/api\/?$/, '')}${url}`;
+  return url;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -58,6 +66,8 @@ export class SocietyStructureService {
 
   getBlocks(societyId: string): Observable<Block[]> { return this.http.get<Block[]>(`${base}/blocks`, { params: { societyId } }); }
   createBlock(payload: { societyId: string; name: string; description?: string }): Observable<Block> { return this.http.post<Block>(`${base}/blocks`, payload); }
+  updateBlock(id: string, payload: { name: string; description?: string }): Observable<Block> { return this.http.put<Block>(`${base}/blocks/${id}`, payload); }
+  deleteBlock(id: string): Observable<unknown> { return this.http.delete(`${base}/blocks/${id}`); }
 
   getWings(blockId: string): Observable<Wing[]> { return this.http.get<Wing[]>(`${base}/wings`, { params: { blockId } }); }
   createWing(payload: { blockId: string; name: string; totalFloors: number }): Observable<Wing> { return this.http.post<Wing>(`${base}/wings`, payload); }
@@ -170,6 +180,26 @@ export interface PaymentOrderResponse {
   checkoutKeyId: string | null;
   amount: number;
   currency: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class PaymentQrCodesService {
+  constructor(private http: HttpClient) {}
+  getAll(societyId?: string): Observable<PaymentQrAssignment[]> {
+    return this.http.get<PaymentQrAssignment[]>(`${base}/payment-qr-codes`, { params: cleanParams({ societyId }) });
+  }
+  getAssignableUsers(societyId: string): Observable<AssignableUser[]> {
+    return this.http.get<AssignableUser[]>(`${base}/payment-qr-codes/assignable-users`, { params: { societyId } });
+  }
+  create(payload: { societyId: string; blockId?: string; assignedToUserId: string; qrImageUrl: string; payeeName?: string }): Observable<PaymentQrAssignment> {
+    return this.http.post<PaymentQrAssignment>(`${base}/payment-qr-codes`, payload);
+  }
+  update(id: string, payload: { blockId?: string; assignedToUserId: string; qrImageUrl: string; payeeName?: string }): Observable<PaymentQrAssignment> {
+    return this.http.put<PaymentQrAssignment>(`${base}/payment-qr-codes/${id}`, payload);
+  }
+  toggleActive(id: string): Observable<unknown> { return this.http.patch(`${base}/payment-qr-codes/${id}/toggle-active`, {}); }
+  delete(id: string): Observable<unknown> { return this.http.delete(`${base}/payment-qr-codes/${id}`); }
+  getMine(): Observable<MyPaymentQr> { return this.http.get<MyPaymentQr>(`${base}/payment-qr-codes/mine`); }
 }
 
 @Injectable({ providedIn: 'root' })

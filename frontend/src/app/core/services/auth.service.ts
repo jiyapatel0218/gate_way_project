@@ -68,18 +68,6 @@ export class AuthService {
     );
   }
 
-  registerSocietyAdmin(payload: { fullName: string; email: string; phoneNumber: string; password: string; societyId: string; profileImageUrl?: string }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/register-society-admin`, payload).pipe(
-      tap((res) => this.storeSession(res))
-    );
-  }
-
-  registerSecurityGuard(payload: { fullName: string; email: string; phoneNumber: string; password: string; societyId: string; shiftTiming: string; guardCode?: string; profileImageUrl?: string }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/register-security-guard`, payload).pipe(
-      tap((res) => this.storeSession(res))
-    );
-  }
-
   logout(): void {
     localStorage.removeItem(STORAGE_KEY);
     this.currentUserSignal.set(null);

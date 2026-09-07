@@ -35,6 +35,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Property Listings', icon: 'real_estate_agent', route: '/property', roles: ['SuperAdmin', 'SocietyAdmin', 'Resident'] },
   { label: 'Notices', icon: 'campaign', route: '/notices', roles: ['SuperAdmin', 'SocietyAdmin', 'Resident', 'SecurityGuard'] },
   { label: 'Masters', icon: 'tune', route: '/masters', roles: ['SuperAdmin', 'SocietyAdmin'] },
+  { label: 'Payment QR Codes', icon: 'qr_code_2', route: '/payment-qr-codes', roles: ['SuperAdmin', 'SocietyAdmin'] },
   { label: 'Reports', icon: 'summarize', route: '/reports', roles: ['SuperAdmin', 'SocietyAdmin'] },
   { label: 'Audit Logs', icon: 'history', route: '/audit-logs', roles: ['SuperAdmin', 'SocietyAdmin'] }
 ];
